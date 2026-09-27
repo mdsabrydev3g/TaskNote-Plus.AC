@@ -117,6 +117,19 @@ const ar = {
   workspace: 'مساحة العمل',
   markDone: 'إكمال',
   reopen: 'إعادة فتح',
+  security: 'الأمان',
+  securityIntro:
+    'غيّر كلمة مرورك من هنا. تغييرها يُبطل تسجيل الدخول على الأجهزة الأخرى (الجلسة الحالية تبقى فعالة).',
+  changePassword: 'تغيير كلمة المرور',
+  currentPassword: 'كلمة المرور الحالية',
+  newPassword: 'كلمة المرور الجديدة',
+  confirmPassword: 'تأكيد كلمة المرور الجديدة',
+  passwordChanged: 'تم تغيير كلمة المرور بنجاح.',
+  currentPasswordIncorrect: 'كلمة المرور الحالية غير صحيحة.',
+  passwordMismatch: 'كلمتا المرور الجديدتان غير متطابقتين.',
+  passwordTooShort: 'كلمة المرور الجديدة قصيرة جدًا (10 أحرف على الأقل).',
+  passwordUnchanged: 'كلمة المرور الجديدة مطابقة للحالية.',
+  passwordHint: '10 أحرف على الأقل، مع 3 أنواع من الأحرف (صغيرة/كبيرة/أرقام/رموز).',
 };
 
 export type Dict = typeof ar;
@@ -229,6 +242,19 @@ const en: Dict = {
   workspace: 'Workspace',
   markDone: 'Mark done',
   reopen: 'Reopen',
+  security: 'Security',
+  securityIntro:
+    'Change your password here. Doing so signs out your other devices; the current session stays active.',
+  changePassword: 'Change password',
+  currentPassword: 'Current password',
+  newPassword: 'New password',
+  confirmPassword: 'Confirm new password',
+  passwordChanged: 'Your password has been changed.',
+  currentPasswordIncorrect: 'The current password is incorrect.',
+  passwordMismatch: 'The new passwords do not match.',
+  passwordTooShort: 'The new password is too short (10+ characters).',
+  passwordUnchanged: 'The new password matches the current one.',
+  passwordHint: 'At least 10 characters using 3 character classes (lower, upper, digits, symbols).',
 };
 
 export const dictionaries: Record<Locale, Dict> = { ar, en };

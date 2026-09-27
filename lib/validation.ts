@@ -15,6 +15,16 @@ export const signInSchema = z.object({
   password: z.string().min(1).max(200),
 });
 
+/**
+ * Structural validation only. Business rules (matching, policy, reuse) live in
+ * checkPasswordChange so they stay a single, unit-testable source of truth.
+ */
+export const changePasswordSchema = z.object({
+  current: z.string().min(1).max(200),
+  next: z.string().min(1).max(200),
+  confirm: z.string().min(1).max(200),
+});
+
 export const captureSchema = z.object({
   rawText: z.string().trim().min(1).max(20000),
   source: z.enum(['text', 'voice', 'image', 'email', 'web', 'file']).default('text'),
@@ -96,3 +106,4 @@ export type NoteInput = z.infer<typeof noteSchema>;
 export type ProjectInput = z.infer<typeof projectSchema>;
 export type GoalInput = z.infer<typeof goalSchema>;
 export type EventInput = z.infer<typeof eventSchema>;
+export type ChangePasswordInput = z.infer<typeof changePasswordSchema>;

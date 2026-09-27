@@ -78,7 +78,11 @@ export default async function SettingsPage() {
         <p className="text-[11px] text-muted">{dict.aiDisabledHint}</p>
       </section>
 
-      <nav className="grid gap-2 sm:grid-cols-2">
+      <nav className="grid gap-2 sm:grid-cols-3">
+        <Link href="/app/settings/security" className="card hover:border-brand-400">
+          <span className="text-sm font-medium">{dict.security}</span>
+          <p className="mt-1 text-xs text-muted">{dict.securityIntro}</p>
+        </Link>
         <Link href="/app/settings/permissions" className="card hover:border-brand-400">
           <span className="text-sm font-medium">{dict.permissions}</span>
           <p className="mt-1 text-xs text-muted">{dict.permissionsIntro}</p>

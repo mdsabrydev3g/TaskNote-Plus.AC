@@ -8,7 +8,8 @@
  *
  * Run after `next build`. Exits non-zero when a target is missing.
  */
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { join } from 'node:path';
 
 const manifestPath = '.next/app-path-routes-manifest.json';
 
@@ -27,41 +28,59 @@ try {
 
 const routes = new Set(Object.values(manifest));
 
-/** Absolute-path string literals that look like routes (no file extensions). */
-function routeLiterals(file) {
-  const source = readFileSync(file, 'utf8');
-  return [...source.matchAll(/'(\/[A-Za-z0-9\-_/[\]]*)'/g)]
-    .map((m) => m[1])
-    .filter((p) => !p.includes('.') && p !== '/');
+function sourceFiles(dir, out = []) {
+  for (const entry of readdirSync(dir)) {
+    const full = join(dir, entry);
+    if (statSync(full).isDirectory()) sourceFiles(full, out);
+    else if (/\.(ts|tsx)$/.test(entry)) out.push(full);
+  }
+  return out;
 }
 
-// 1. sidebar / bottom-nav targets
-const navHrefs = [...readFileSync('lib/nav.ts', 'utf8').matchAll(/href:\s*'([^']+)'/g)].map((m) => m[1]);
-if (navHrefs.length === 0) fail('No navigation hrefs found in lib/nav.ts — did the shape change?');
+/**
+ * Every quoted literal that starts with /app/ is meant to be a real page.
+ * Template literals (backticks) are dynamic and deliberately skipped.
+ */
+function appPathLiterals(file) {
+  const source = readFileSync(file, 'utf8');
+  return [...source.matchAll(/['"](\/app\/[A-Za-z0-9\-_/[\]]*)['"]/g)]
+    .map((m) => m[1])
+    .filter((p) => !p.endsWith('/'));
+}
+
+// 1. every /app/... literal anywhere in the source tree
+const targetFiles = [
+  ...sourceFiles('app'),
+  ...sourceFiles('components'),
+  ...sourceFiles('lib'),
+];
+
+const found = new Map();
+for (const file of targetFiles) {
+  for (const literal of appPathLiterals(file)) {
+    if (!found.has(literal)) found.set(literal, file);
+  }
+}
+if (found.size === 0) fail('No /app/... route literals found — did the scan break?');
 
 // 2. PWA manifest start_url and shortcuts
 const pwa = JSON.parse(readFileSync('public/manifest.webmanifest', 'utf8'));
-const pwaTargets = [pwa.start_url, ...(pwa.shortcuts ?? []).map((s) => s.url)].filter(Boolean);
+for (const target of [pwa.start_url, ...(pwa.shortcuts ?? []).map((s) => s.url)]) {
+  if (target) found.set(target, 'public/manifest.webmanifest');
+}
 
-// 3. post-auth redirect targets and cross-links
-const redirectTargets = [
-  ...routeLiterals('app/page.tsx'),
-  ...routeLiterals('components/auth-form.tsx'),
-];
-
-const targets = [...new Set([...navHrefs, ...pwaTargets, ...redirectTargets])].sort();
-const missing = targets.filter((href) => !routes.has(href));
-
+const missing = [...found.entries()].filter(([href]) => !routes.has(href));
 if (missing.length > 0) {
   fail('Referenced targets are not served by the build:', [
-    ...missing,
+    ...missing.map(([href, file]) => `${href}   (${file})`),
     '',
     'Routes actually available:',
     ...[...routes].sort().map((r) => `  ${r}`),
   ]);
 }
 
-// 4. the middleware matcher must cover every navigation target
+// 3. the middleware matcher must cover every navigation target
+const navHrefs = [...readFileSync('lib/nav.ts', 'utf8').matchAll(/href:\s*'([^']+)'/g)].map((m) => m[1]);
 const middleware = readFileSync('middleware.ts', 'utf8');
 const matcher = middleware.match(/matcher:\s*\[([^\]]+)\]/)?.[1] ?? '';
 const matcherPrefix = matcher.match(/'([^']+)\/:path\*'/)?.[1];
@@ -72,5 +91,5 @@ if (unprotected.length > 0) {
   fail(`Navigation targets fall outside the middleware matcher ${matcherPrefix}/:path*:`, unprotected);
 }
 
-console.log(`✓ Route contract OK: ${targets.length} targets resolved against ${routes.size} routes.`);
+console.log(`✓ Route contract OK: ${found.size} targets resolved against ${routes.size} routes.`);
 console.log(`  middleware scope: ${matcherPrefix}/:path*`);
