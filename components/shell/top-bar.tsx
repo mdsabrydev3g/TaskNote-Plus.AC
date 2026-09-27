@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useEffect, useState, useTransition } from 'react';
 import { setLocaleAction, signOutAction } from '@/app/actions/auth';
 import type { Dict } from '@/lib/i18n/dictionaries';
@@ -32,6 +33,17 @@ export function TopBar({ dict, locale, email }: { dict: Dict; locale: 'ar' | 'en
       </div>
 
       <div className="flex items-center gap-2">
+        {/* One-click access to the password screen from every page. */}
+        <Link
+          href="/app/settings/security"
+          className="btn-ghost px-3 py-1.5 text-xs"
+          aria-label={dict.changePassword}
+          title={dict.changePassword}
+        >
+          <span aria-hidden="true">🔑</span>
+          <span className="hidden sm:inline">{dict.changePassword}</span>
+        </Link>
+
         <button
           type="button"
           className="btn-ghost px-3 py-1.5 text-xs"
