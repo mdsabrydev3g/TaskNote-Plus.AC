@@ -42,3 +42,29 @@ jobs:
       # Guards the navigation/PWA/middleware route contract against the built app.
       - name: Route contract check
         run: npm run check:routes
+
+  mobile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+
+      - name: Install dependencies
+        working-directory: mobile
+        run: npm ci
+
+      # Runs on Linux on purpose: module resolution is case-sensitive here, so a
+      # wrongly-cased import (App.tsx vs app.tsx) fails instead of silently
+      # working on a Windows dev machine.
+      - name: Typecheck
+        working-directory: mobile
+        run: npm run typecheck

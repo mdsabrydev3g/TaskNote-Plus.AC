@@ -16,7 +16,7 @@
 | الواجهة | Next.js 15 (App Router) + React 19 + TypeScript + Tailwind CSS |
 | قاعدة البيانات | PostgreSQL (Neon) عبر Drizzle ORM |
 | الاستضافة | Vercel (Web / PWA) |
-| الموبايل | PWA قابل للتثبيت + تصميم mobile-first (خطة React Native لاحقًا) |
+| الموبايل | PWA قابل للتثبيت + **تطبيق أصلي بـ Expo/React Native في `mobile/`** |
 | اللغات | العربية (افتراضي، RTL) + الإنجليزية |
 | الذكاء الاصطناعي | اختياري تمامًا — وضع محلي افتراضي، لا يوجد أي تدفق أساسي يعتمد عليه |
 
@@ -123,6 +123,7 @@ db/  schema.ts, client.ts, migrations/
 lib/ api/ (http, auth, dto), services/accounts.ts, auth/, db/scope.ts, ai/,
      i18n/, progress, search, validation
 docs/ mobile-api.md
+mobile/                       # تطبيق Expo (مشروع مستقل، له package.json خاص)
 scripts/ migrate.ts, seed.ts, check-routes.mjs
 tests/ vitest
 public/ manifest.webmanifest, sw.js, icons
@@ -175,7 +176,17 @@ npm run verify
 - **تطبيق React Native أصلي**: لم يُنشأ؛ التسليم الحالي هو PWA. النشر على Vercel يخدم الويب.
 - الكلمات «Hijri» تعتمد على `Intl` المدمج وليست تقويمًا فلكيًا معتمدًا للفتاوى.
 
-## 11. الخطوة التالية / Next steps
+## 11. تطبيق الموبايل / Mobile app
+
+تطبيق React Native (Expo) في [`mobile/`](mobile/README.md) يستهلك واجهة `v1`:
+دخول، شاشة اليوم، التقاط سريع ومعالجة الوارد، المهام مع الإضافة باللغة الطبيعية، والملاحظات.
+الرمز يُخزَّن في `expo-secure-store`، والواجهة عربية RTL افتراضيًا.
+
+```bash
+cd mobile && npm install && npm start
+```
+
+## 12. الخطوة التالية / Next steps
 
 1. ربط `DATABASE_URL` من Neon وتشغيل `db:migrate` + `db:seed`.
 2. النشر على Vercel وإضافة `AUTH_SECRET` و`APP_URL`.

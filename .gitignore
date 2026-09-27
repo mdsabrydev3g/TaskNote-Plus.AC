@@ -21,6 +21,11 @@ skills-lock.json
 *.credentials
 credentials*.txt
 
+# The Expo app keeps its own .gitignore; these are covered anyway.
+mobile/node_modules/
+mobile/.expo/
+mobile/dist/
+
 *.tsbuildinfo
 next-env.d.ts
 .vercel

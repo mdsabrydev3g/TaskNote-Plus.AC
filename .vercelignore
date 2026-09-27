@@ -9,4 +9,6 @@ coverage
 .env.*
 !.env.example
 *.tsbuildinfo
-coverage
+
+# The Expo app is a separate project; it must never be uploaded with the web build.
+mobile

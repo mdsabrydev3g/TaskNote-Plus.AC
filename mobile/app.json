@@ -1,0 +1,36 @@
+{
+  "expo": {
+    "name": "TaskNote Plus",
+    "slug": "tasknote-plus",
+    "scheme": "tasknoteplus",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "app.tasknoteplus.mobile",
+      "infoPlist": {
+        "CFBundleDevelopmentRegion": "ar",
+        "CFBundleLocalizations": [
+          "ar",
+          "en"
+        ]
+      }
+    },
+    "android": {
+      "package": "app.tasknoteplus.mobile",
+      "edgeToEdgeEnabled": true
+    },
+    "extra": {
+      "apiBaseUrl": "https://task-note-plus-ac.vercel.app"
+    },
+    "plugins": [
+      "expo-secure-store",
+      "expo-status-bar"
+    ]
+  }
+}
