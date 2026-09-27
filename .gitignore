@@ -10,6 +10,17 @@ coverage/
 .env*
 !.env.example
 
+# Installed locally by the Vercel/Neon marketplace integration. Useful on the
+# machine, but not part of this project's source.
+.agents/
+.claude/
+skills-lock.json
+
+# Local, git-ignored notes. Never push credentials: this repository is public.
+اليوزر والباس/
+*.credentials
+credentials*.txt
+
 *.tsbuildinfo
 next-env.d.ts
 .vercel
