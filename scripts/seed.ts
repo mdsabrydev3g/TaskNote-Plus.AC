@@ -1,6 +1,9 @@
 /**
  * Idempotent demo seed. Re-running it will not create duplicate accounts.
- * Usage: DATABASE_URL=... npm run db:seed
+ * Usage: npm run db:seed
+ *
+ * SAFETY: the seed creates an account with a publicly known password, so it
+ * refuses to run against a non-local database unless ALLOW_PROD_SEED=1.
  */
 import { eq } from 'drizzle-orm';
 import { Pool } from 'pg';
@@ -23,10 +26,21 @@ import { contentKey } from '../lib/hash';
 const DEMO_EMAIL = 'demo@tasknote.local';
 const DEMO_PASSWORD = 'TaskNote-Demo-2026';
 
+loadEnvFiles();
+
 async function main() {
   const url = process.env.DATABASE_URL_UNPOOLED || process.env.DATABASE_URL;
   if (!url) {
-    console.error('DATABASE_URL is required.');
+    console.error('DATABASE_URL is required. Add it to .env.local or export it.');
+    process.exit(1);
+  }
+
+  const isLocal = /localhost|127\.0\.0\.1|::1/.test(url);
+  if (!isLocal && process.env.ALLOW_PROD_SEED !== '1') {
+    console.error(
+      'Refusing to seed a non-local database: this creates a demo account with a known password.\n' +
+        'If you really mean it, re-run with ALLOW_PROD_SEED=1.',
+    );
     process.exit(1);
   }
 
@@ -153,6 +167,16 @@ async function main() {
 
   await pool.end();
   console.log(`Seed complete. Sign in with ${DEMO_EMAIL} / ${DEMO_PASSWORD}`);
+}
+
+function loadEnvFiles(): void {
+  for (const file of ['.env.local', '.env']) {
+    try {
+      process.loadEnvFile(file);
+    } catch {
+      // Missing file is expected in CI and on Vercel.
+    }
+  }
 }
 
 main().catch((error) => {
