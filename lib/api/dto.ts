@@ -161,7 +161,8 @@ export const toMilestoneDto = (row: Milestone) => ({
 
 export type UserDto = {
   id: string;
-  email: string;
+  username: string | null;
+  email: string | null;
   name: string;
   locale: string;
   aiEnabled: boolean;
@@ -176,6 +177,7 @@ export type WorkspaceDto = {
 
 export const toUserDto = (row: User): UserDto => ({
   id: row.id,
+  username: row.username,
   email: row.email,
   name: row.name,
   locale: row.locale,

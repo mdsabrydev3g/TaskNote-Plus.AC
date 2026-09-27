@@ -7,7 +7,8 @@ export const SESSION_TTL_SECONDS = 60 * 60 * 24 * 30; // 30 days
 export type SessionClaims = {
   userId: string;
   workspaceId: string;
-  email: string;
+  /** Login identity. Older tokens carry `email` here instead; see verifySessionToken. */
+  username: string;
   deviceId: string;
 };
 
@@ -40,17 +41,22 @@ export async function verifySessionToken(token: string): Promise<SessionClaims |
       issuer: 'tasknote-plus',
       audience: 'tasknote-plus-web',
     });
-    if (
-      typeof payload.userId !== 'string' ||
-      typeof payload.workspaceId !== 'string' ||
-      typeof payload.email !== 'string'
-    ) {
-      return null;
-    }
+
+    if (typeof payload.userId !== 'string' || typeof payload.workspaceId !== 'string') return null;
+
+    // Tokens issued before the username migration carry `email`; keep accepting
+    // them so a deploy does not sign everybody out.
+    const username =
+      typeof payload.username === 'string'
+        ? payload.username
+        : typeof payload.email === 'string'
+          ? payload.email
+          : '';
+
     return {
       userId: payload.userId,
       workspaceId: payload.workspaceId,
-      email: payload.email,
+      username,
       deviceId: typeof payload.deviceId === 'string' ? payload.deviceId : 'web',
     };
   } catch {

@@ -6,12 +6,12 @@ import { and, eq, ne } from 'drizzle-orm';
 import { db } from '@/db/client';
 import { permissionGrants, sessions, users, workspaces } from '@/db/schema';
 import { assertSameOrigin, requestIp, requireSessionOrThrow } from '@/lib/auth/current';
-import { checkEmailChange } from '@/lib/auth/email-change';
 import { checkPasswordChange, hashPassword, verifyPassword } from '@/lib/auth/password';
+import { checkUsernameChange } from '@/lib/auth/username-change';
 import { SESSION_COOKIE, createSessionToken, sessionCookieOptions } from '@/lib/auth/session';
 import { rateLimit } from '@/lib/rate-limit';
 import { writeAudit } from '@/lib/db/scope';
-import { changeEmailSchema, changePasswordSchema, permissionScopeSchema } from '@/lib/validation';
+import { changePasswordSchema, changeUsernameSchema, permissionScopeSchema } from '@/lib/validation';
 
 export async function setPermissionAction(formData: FormData): Promise<void> {
   const session = await requireSessionOrThrow();
@@ -139,65 +139,65 @@ export async function changePasswordAction(
   return { ok: true };
 }
 
-export type ChangeEmailState = { error?: string; ok?: boolean; email?: string };
+export type ChangeUsernameState = { error?: string; ok?: boolean; username?: string };
 
 /**
- * Changes the account email. The email is the login identity, so the current
+ * Changes the login identity. The username is what signs you in, so the current
  * password is required and uniqueness is enforced before the write.
  */
-export async function changeEmailAction(
-  _prev: ChangeEmailState,
+export async function changeUsernameAction(
+  _prev: ChangeUsernameState,
   formData: FormData,
-): Promise<ChangeEmailState> {
+): Promise<ChangeUsernameState> {
   const session = await requireSessionOrThrow();
   await assertSameOrigin();
 
-  if (!rateLimit(`email-change:${session.userId}`, 5, 15 * 60_000).allowed) {
+  if (!rateLimit(`username-change:${session.userId}`, 5, 15 * 60_000).allowed) {
     return { error: 'genericError' };
   }
 
-  const parsed = changeEmailSchema.safeParse({
-    email: String(formData.get('email') ?? ''),
+  const parsed = changeUsernameSchema.safeParse({
+    username: String(formData.get('username') ?? ''),
     currentPassword: String(formData.get('currentPassword') ?? ''),
   });
-  if (!parsed.success) return { error: 'emailInvalid' };
+  if (!parsed.success) return { error: 'invalidUsername' };
 
   const rows = await db().select().from(users).where(eq(users.id, session.userId)).limit(1);
   const user = rows[0];
   if (!user) return { error: 'genericError' };
 
-  const problem = checkEmailChange({
+  const problem = checkUsernameChange({
     currentMatches: verifyPassword(parsed.data.currentPassword, user.passwordHash),
-    currentEmail: user.email,
-    nextEmail: parsed.data.email,
+    currentUsername: user.username ?? '',
+    nextUsername: parsed.data.username,
   });
   if (problem) return { error: problem };
 
-  const nextEmail = parsed.data.email.trim().toLowerCase();
+  const nextUsername = parsed.data.username.trim().toLowerCase();
 
   const taken = await db()
     .select({ id: users.id })
     .from(users)
-    .where(eq(users.email, nextEmail))
+    .where(eq(users.username, nextUsername))
     .limit(1);
-  if (taken.length > 0 && taken[0].id !== session.userId) return { error: 'emailTaken' };
+  if (taken.length > 0 && taken[0].id !== session.userId) return { error: 'usernameTaken' };
 
   try {
     await db()
       .update(users)
-      .set({ email: nextEmail, updatedAt: new Date() })
+      .set({ username: nextUsername, updatedAt: new Date() })
       .where(eq(users.id, session.userId));
   } catch {
     // The unique index is the last line of defence against a concurrent write.
-    return { error: 'emailTaken' };
+    return { error: 'usernameTaken' };
   }
 
-  // The session token carries the email for display, so re-issue it with the
-  // new address; the user stays signed in on this device.
+  // The session token carries the username for display, so re-issue it; the user
+  // stays signed in on this device.
   const token = await createSessionToken({
     userId: session.userId,
     workspaceId: session.workspaceId,
-    email: nextEmail,
+    username: nextUsername,
     deviceId: session.deviceId,
   });
   const store = await cookies();
@@ -206,14 +206,14 @@ export async function changeEmailAction(
   await writeAudit({
     workspaceId: session.workspaceId,
     actorUserId: session.userId,
-    action: 'user.email_change',
+    action: 'user.username_change',
     entityType: 'user',
     entityId: session.userId,
-    metadata: { from: user.email, to: nextEmail },
+    metadata: { from: user.username, to: nextUsername },
     ip: await requestIp(),
   });
 
   revalidatePath('/app/settings');
   revalidatePath('/app/home');
-  return { ok: true, email: nextEmail };
+  return { ok: true, username: nextUsername };
 }

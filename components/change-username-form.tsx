@@ -1,23 +1,23 @@
 'use client';
 
 import { useActionState, useEffect, useRef } from 'react';
-import { changeEmailAction, type ChangeEmailState } from '@/app/actions/settings';
+import { changeUsernameAction, type ChangeUsernameState } from '@/app/actions/settings';
 import type { Dict } from '@/lib/i18n/dictionaries';
 
-const initialState: ChangeEmailState = {};
+const initialState: ChangeUsernameState = {};
 
 const ERROR_KEYS: Record<string, keyof Dict> = {
   current_password_incorrect: 'currentPasswordIncorrect',
-  email_unchanged: 'emailUnchanged',
-  invalid_email: 'emailInvalid',
-  emailInvalid: 'emailInvalid',
-  emailTaken: 'emailTaken',
+  username_unchanged: 'usernameUnchanged',
+  invalid_username: 'invalidUsername',
+  invalidUsername: 'invalidUsername',
+  usernameTaken: 'usernameTaken',
   requiredFields: 'requiredFields',
   genericError: 'genericError',
 };
 
-export function ChangeEmailForm({ dict, currentEmail }: { dict: Dict; currentEmail: string }) {
-  const [state, formAction, isPending] = useActionState(changeEmailAction, initialState);
+export function ChangeUsernameForm({ dict, currentUsername }: { dict: Dict; currentUsername: string }) {
+  const [state, formAction, isPending] = useActionState(changeUsernameAction, initialState);
   const formRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
@@ -28,27 +28,30 @@ export function ChangeEmailForm({ dict, currentEmail }: { dict: Dict; currentEma
 
   return (
     <form ref={formRef} action={formAction} className="card flex flex-col gap-3">
-      <h2 className="text-sm font-semibold">{dict.changeEmail}</h2>
+      <h2 className="text-sm font-semibold">{dict.changeUsername}</h2>
+      <p className="text-[11px] text-muted">{dict.usernameHint}</p>
 
       <div>
-        <span className="label">{dict.currentEmail}</span>
+        <span className="label">{dict.currentUsername}</span>
         <p className="rounded-xl border border-line bg-surface px-3 py-2 text-sm" dir="ltr">
-          {currentEmail}
+          {currentUsername}
         </p>
       </div>
 
       <div>
-        <label className="label" htmlFor="email">
-          {dict.newEmail}
+        <label className="label" htmlFor="username">
+          {dict.newUsername}
         </label>
         <input
-          id="email"
-          name="email"
-          type="email"
+          id="username"
+          name="username"
           className="input"
           required
-          autoComplete="email"
+          minLength={3}
+          maxLength={30}
+          autoComplete="username"
           dir="ltr"
+          spellCheck={false}
         />
       </div>
 
@@ -66,7 +69,7 @@ export function ChangeEmailForm({ dict, currentEmail }: { dict: Dict; currentEma
         />
       </div>
 
-      <p className="text-[11px] text-muted">{dict.emailNote}</p>
+      <p className="text-[11px] text-muted">{dict.usernameNote}</p>
 
       {errorKey && (
         <p
@@ -80,7 +83,7 @@ export function ChangeEmailForm({ dict, currentEmail }: { dict: Dict; currentEma
       <p className="text-xs" role="status" aria-live="polite">
         {state.ok ? (
           <span className="text-emerald-600">
-            {dict.emailChanged} <span dir="ltr">{state.email}</span>
+            {dict.usernameChanged} <span dir="ltr">{state.username}</span>
           </span>
         ) : (
           ''
@@ -89,7 +92,7 @@ export function ChangeEmailForm({ dict, currentEmail }: { dict: Dict; currentEma
 
       <div>
         <button type="submit" className="btn-primary" disabled={isPending}>
-          {isPending ? '…' : dict.changeEmail}
+          {isPending ? '…' : dict.changeUsername}
         </button>
       </div>
     </form>

@@ -139,6 +139,16 @@ const ar = {
   emailInvalid: 'صيغة البريد الإلكتروني غير صحيحة.',
   emailNote:
     'لا يوجد تحقّق بالبريد في هذه المرحلة، فلا نستطيع إثبات ملكيتك للعنوان الجديد — لكن لا يمكن تغييره دون كلمة مرورك الحالية، والعملية تُسجَّل في سجل التدقيق.',
+  username: 'اسم المستخدم',
+  usernameHint: 'من 3 إلى 30 حرفًا: حروف إنجليزية صغيرة أو أرقام أو . _ - ويبدأ بحرف أو رقم.',
+  usernameNote: 'اسم المستخدم هوية الدخول. الحسابات القديمة يمكنها الدخول ببريدها القديم أيضًا.',
+  changeUsername: 'تغيير اسم المستخدم',
+  currentUsername: 'اسم المستخدم الحالي',
+  newUsername: 'اسم المستخدم الجديد',
+  usernameChanged: 'تم تغيير اسم المستخدم. استخدمه في الدخول من الآن.',
+  usernameUnchanged: 'اسم المستخدم الجديد مطابق للحالي.',
+  invalidUsername: 'اسم المستخدم غير صالح: 3–30 حرفًا، حروف إنجليزية صغيرة أو أرقام أو . _ -',
+  usernameTaken: 'اسم المستخدم محجوز.',
 };
 
 export type Dict = typeof ar;
@@ -273,6 +283,16 @@ const en: Dict = {
   emailInvalid: 'That email address is not valid.',
   emailNote:
     'There is no email verification in this build, so ownership of the new address cannot be proven — but it cannot be changed without your current password, and the change is written to the audit log.',
+  username: 'Username',
+  usernameHint: '3-30 characters: lowercase letters, digits, dot, underscore or hyphen, starting with a letter or digit.',
+  usernameNote: 'The username is your login identity. Accounts created earlier can still sign in with their old email.',
+  changeUsername: 'Change username',
+  currentUsername: 'Current username',
+  newUsername: 'New username',
+  usernameChanged: 'Your username has been changed. Use it to sign in from now on.',
+  usernameUnchanged: 'The new username matches the current one.',
+  invalidUsername: 'Invalid username: 3-30 characters, lowercase letters, digits, dot, underscore or hyphen.',
+  usernameTaken: 'That username is taken.',
 };
 
 export const dictionaries: Record<Locale, Dict> = { ar, en };

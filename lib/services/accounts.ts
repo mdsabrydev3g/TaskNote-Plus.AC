@@ -1,4 +1,4 @@
-import { eq } from 'drizzle-orm';
+import { eq, or } from 'drizzle-orm';
 import { db } from '@/db/client';
 import {
   deviceRegistry,
@@ -17,6 +17,10 @@ import { writeAudit } from '@/lib/db/scope';
 /**
  * Account lifecycle, shared by the web server actions and the mobile API so
  * there is exactly one signup/login implementation (grants included).
+ *
+ * The login identity is `username`. `email` is a legacy, optional contact
+ * address: it is no longer collected at signup, but accounts created before the
+ * migration keep theirs and can still sign in with it.
  */
 
 export const DEFAULT_GRANTS: Array<{ scope: string; label: string }> = [
@@ -37,7 +41,7 @@ export type AccountSession = {
 
 export async function registerAccount(input: {
   name: string;
-  email: string;
+  username: string;
   password: string;
   workspaceName?: string;
   locale: 'ar' | 'en';
@@ -49,7 +53,7 @@ export async function registerAccount(input: {
   const [user] = await db()
     .insert(users)
     .values({
-      email: input.email,
+      username: input.username.trim().toLowerCase(),
       passwordHash: hashPassword(input.password),
       name: input.name,
       locale: input.locale,
@@ -85,27 +89,37 @@ export async function registerAccount(input: {
     ip: input.ip,
   });
 
-  const session = await startSessionFor({
+  return startSessionFor({
     user,
     workspace,
     deviceId: input.deviceId,
     deviceName: input.deviceName,
     platform: input.platform,
   });
+}
 
-  return session;
+export async function findUserByIdentifier(identifier: string): Promise<User | undefined> {
+  const value = identifier.trim().toLowerCase();
+  if (value.length === 0) return undefined;
+
+  const rows = await db()
+    .select()
+    .from(users)
+    .where(or(eq(users.username, value), eq(users.email, value)))
+    .limit(1);
+
+  return rows[0];
 }
 
 export async function authenticateAccount(input: {
-  email: string;
+  identifier: string;
   password: string;
   deviceId?: string;
   deviceName?: string;
   platform?: string;
   ip?: string;
 }): Promise<AccountSession | null> {
-  const rows = await db().select().from(users).where(eq(users.email, input.email)).limit(1);
-  const user = rows[0];
+  const user = await findUserByIdentifier(input.identifier);
   if (!user || !verifyPassword(input.password, user.passwordHash)) return null;
 
   const memberships = await db()
@@ -173,7 +187,7 @@ export async function startSessionFor(input: {
   const token = await createSessionToken({
     userId: input.user.id,
     workspaceId: input.workspace.id,
-    email: input.user.email,
+    username: input.user.username ?? '',
     deviceId,
   });
 

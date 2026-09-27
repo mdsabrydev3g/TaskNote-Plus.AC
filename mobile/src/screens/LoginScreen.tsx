@@ -28,7 +28,7 @@ export function LoginScreen({
   onToggleLocale: () => void;
 }) {
   const isRtl = locale === 'ar';
-  const [email, setEmail] = useState('');
+  const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -37,7 +37,7 @@ export function LoginScreen({
     setError(null);
     setBusy(true);
     try {
-      const session = await api.login(email.trim().toLowerCase(), password);
+      const session = await api.login(identifier.trim(), password);
       onSignedIn(session.token);
     } catch (caught) {
       setError(messageForError(caught, dict));
@@ -57,17 +57,19 @@ export function LoginScreen({
           <Text style={{ color: colors.muted, marginTop: 6, textAlign: 'center' }}>{dict.tagline}</Text>
         </View>
 
-        <Text style={[labelStyle, textStyle(isRtl)]}>{dict.email}</Text>
+        <Text style={[labelStyle, textStyle(isRtl)]}>{dict.username}</Text>
         <TextInput
-          value={email}
-          onChangeText={setEmail}
+          value={identifier}
+          onChangeText={setIdentifier}
           autoCapitalize="none"
           autoCorrect={false}
-          keyboardType="email-address"
-          placeholder="you@example.com"
+          placeholder="username"
           placeholderTextColor={colors.muted}
           style={[input, textStyle(isRtl)]}
         />
+        <Text style={{ color: colors.muted, fontSize: 11, textAlign: isRtl ? 'right' : 'left' }}>
+          {dict.usernameNote}
+        </Text>
 
         <Text style={[labelStyle, textStyle(isRtl)]}>{dict.password}</Text>
         <TextInput
@@ -85,7 +87,7 @@ export function LoginScreen({
 
         <Pressable
           onPress={submit}
-          disabled={busy || email.length === 0 || password.length === 0}
+          disabled={busy || identifier.length === 0 || password.length === 0}
           style={{
             backgroundColor: busy ? colors.muted : colors.brand,
             borderRadius: 12,

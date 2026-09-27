@@ -6,7 +6,7 @@ import { requireSession } from '@/lib/auth/current';
 import { getTranslator } from '@/lib/i18n';
 import { dictionaries } from '@/lib/i18n/dictionaries';
 import { updateProfileAction } from '@/app/actions/settings';
-import { ChangeEmailForm } from '@/components/change-email-form';
+import { ChangeUsernameForm } from '@/components/change-username-form';
 import { getAIGateway } from '@/lib/ai/gateway';
 
 export const dynamic = 'force-dynamic';
@@ -66,13 +66,13 @@ export default async function SettingsPage() {
         </form>
       </section>
 
-      <ChangeEmailForm dict={dict} currentEmail={session.email} />
+      <ChangeUsernameForm dict={dict} currentUsername={session.username} />
 
       <section className="card flex flex-col gap-2">
         <h2 className="text-sm font-semibold">{dict.workspace}</h2>
         <dl className="grid grid-cols-2 gap-2 text-xs">
-          <dt className="text-muted">{dict.email}</dt>
-          <dd className="truncate">{session.email}</dd>
+          <dt className="text-muted">{dict.username}</dt>
+          <dd className="truncate" dir="ltr">{session.username}</dd>
           <dt className="text-muted">{dict.language}</dt>
           <dd>{locale === 'ar' ? 'العربية (RTL)' : 'English'}</dd>
           <dt className="text-muted">{dict.aiDisabled}</dt>

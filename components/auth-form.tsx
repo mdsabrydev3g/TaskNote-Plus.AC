@@ -46,17 +46,23 @@ export function AuthForm({ mode, dict }: { mode: 'signin' | 'signup'; dict: Dict
       )}
 
       <div>
-        <label className="label" htmlFor="email">
-          {dict.email}
+        <label className="label" htmlFor={mode === 'signup' ? 'username' : 'identifier'}>
+          {dict.username}
         </label>
         <input
-          id="email"
-          name="email"
-          type="email"
+          id={mode === 'signup' ? 'username' : 'identifier'}
+          name={mode === 'signup' ? 'username' : 'identifier'}
           className="input"
           required
-          autoComplete="email"
+          minLength={mode === 'signup' ? 3 : 1}
+          maxLength={mode === 'signup' ? 30 : 254}
+          autoComplete="username"
+          autoCapitalize="none"
+          spellCheck={false}
+          dir="ltr"
         />
+        {mode === 'signup' && <p className="mt-1 text-[11px] text-muted">{dict.usernameHint}</p>}
+        {mode === 'signin' && <p className="mt-1 text-[11px] text-muted">{dict.usernameNote}</p>}
       </div>
 
       <div>

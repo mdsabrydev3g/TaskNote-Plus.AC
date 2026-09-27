@@ -5,7 +5,11 @@
 
 > Server Actions الخاصة بالويب **لا تُستهلك** من تطبيق أصلي؛ لذلك هذه الواجهة موجودة.
 
-## المصادقة
+## الهوية والمصادقة
+
+**هوية الدخول هي اسم المستخدم (username)** — لا بريد إلكتروني.
+البريد لم يعد يُطلب عند التسجيل، لكن الحسابات التي أُنشئت قبل التحويل يمكنها الدخول ببريدها
+القديم أيضًا (يُقبل في `identifier`).
 
 كل الطلبات المحمية تحتاج ترويسة:
 
@@ -14,10 +18,14 @@ Authorization: Bearer <token>
 ```
 
 يُستخرج الرمز من `POST /api/v1/auth/login` أو `POST /api/v1/auth/signup`.
-الرمز هو JWT موقّع (HS256) يحمل `userId` و`workspaceId` و`deviceId`، وصلاحيته 30 يومًا.
+الرمز JWT موقّع (HS256) يحمل `userId` و`workspaceId` و`username` و`deviceId`، وصلاحيته 30 يومًا.
 
 اختياريًا أرسل `X-Device-Id: <معرّف ثابت للجهاز>` لتُسجَّل الجلسة باسم الجهاز.
-وإن لم ترسله يُولَّد تلقائيًا.
+
+### قواعد اسم المستخدم
+
+من 3 إلى 30 حرفًا، **حروف إنجليزية صغيرة** أو أرقام أو `.` `_` `-`، ويبدأ بحرف أو رقم.
+يُحوَّل إلى حروف صغيرة دائمًا، فلا يمكن وجود حسابين يختلفان في حالة الأحرف فقط.
 
 ## صيغة الاستجابة
 
@@ -34,7 +42,7 @@ Authorization: Bearer <token>
 | 400 | `invalid_request` |
 | 401 | `unauthenticated` |
 | 404 | `not_found` |
-| 409 | `conflict` |
+| 409 | `conflict` (مثل `username_taken`) |
 | 429 | `rate_limited` |
 | 500 | `internal_error` |
 
@@ -44,9 +52,12 @@ Authorization: Bearer <token>
 
 | الطريقة | المسار | الوصف |
 | --- | --- | --- |
-| POST | `/api/v1/auth/signup` | `{ name, email, password, workspaceName?, locale? }` → `201` + رمز |
-| POST | `/api/v1/auth/login` | `{ email, password }` → `200` + رمز |
+| POST | `/api/v1/auth/signup` | `{ name, username, password, workspaceName?, locale? }` → `201` + رمز |
+| POST | `/api/v1/auth/login` | `{ identifier, password }` → `200` + رمز |
 | GET | `/api/v1/me` | المستخدم + مساحة العمل + أذونات الذكاء الاصطناعي |
+
+`identifier` هو اسم المستخدم. وللتوافق مع العملاء القدامى تُقبل أيضًا `username` و`email`
+بنفس المعنى، فالتطبيقات المبنية قبل التحويل تستمر في العمل دون تعديل.
 
 ### الالتقاط (Inbox)
 
@@ -87,10 +98,16 @@ Authorization: Bearer <token>
 ```bash
 BASE=https://task-note-plus-ac.vercel.app
 
+# تسجيل الدخول باسم المستخدم
 TOKEN=$(curl -s -X POST "$BASE/api/v1/auth/login" \
   -H 'content-type: application/json' \
-  -d '{"email":"demo@tasknote-plus.app","password":"<password>"}' \
+  -d '{"identifier":"demo","password":"<your-password>"}' \
   | node -pe 'JSON.parse(require("fs").readFileSync(0,"utf8")).data.token')
+
+# إنشاء حساب جديد باسم مستخدم
+curl -s -X POST "$BASE/api/v1/auth/signup" \
+  -H 'content-type: application/json' \
+  -d '{"name":"Osama","username":"osama.dev","password":"<strong-password>"}'
 
 curl -s "$BASE/api/v1/tasks?filter=open" -H "authorization: Bearer $TOKEN"
 
@@ -109,3 +126,10 @@ curl -s -X POST "$BASE/api/v1/capture" \
 - لا تُضاف ترويسات CORS، فالواجهة مقصودة للمنادين الأصليين (native) لا لمتصفحات أخرى.
 - كل عملية كتابة تُسجَّل في `audit_logs`.
 - `GET /api/v1/me` يعرض أذونات الذكاء الاصطناعي ليحترمها العميل (لا قراءة بلا إذن مُمنوح).
+
+## تغيير الهوية وكلمة المرور
+
+تغيير اسم المستخدم وكلمة المرور متاح حاليًا من **واجهة الويب** فقط:
+`/app/settings` لتغيير الاسم، و`/app/settings/security` لكلمة المرور —
+وكلاهما يشترط كلمة المرور الحالية ويُسجَّل في سجل التدقيق.
+نقلهما إلى واجهة الـ API (وتاليًا إلى تطبيق الموبايل) خطوة قادمة.

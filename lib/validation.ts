@@ -2,22 +2,37 @@ import { z } from 'zod';
 
 export const emailSchema = z.string().trim().toLowerCase().email().max(254);
 
+/**
+ * Username rules: lowercase, 3-30 characters, starting with a letter or digit,
+ * then letters, digits, dot, underscore or hyphen. Lowercased so two accounts
+ * cannot differ only by case.
+ */
+export const usernameSchema = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .min(3)
+  .max(30)
+  .regex(/^[a-z0-9][a-z0-9._-]*$/, 'invalid_username');
+
 export const signUpSchema = z.object({
   name: z.string().trim().min(1).max(120),
-  email: emailSchema,
+  username: usernameSchema,
   password: z.string().min(10).max(200),
   workspaceName: z.string().trim().max(120).optional(),
   locale: z.enum(['ar', 'en']).default('ar'),
 });
 
 export const signInSchema = z.object({
-  email: emailSchema,
+  /** Username, or a legacy email address for accounts created before usernames. */
+  identifier: z.string().trim().min(1).max(254),
   password: z.string().min(1).max(200),
 });
 
 /**
  * Structural validation only. Business rules (matching, policy, reuse) live in
- * checkPasswordChange so they stay a single, unit-testable source of truth.
+ * checkPasswordChange / checkUsernameChange so they stay a single, unit-testable
+ * source of truth.
  */
 export const changePasswordSchema = z.object({
   current: z.string().min(1).max(200),
@@ -25,8 +40,8 @@ export const changePasswordSchema = z.object({
   confirm: z.string().min(1).max(200),
 });
 
-export const changeEmailSchema = z.object({
-  email: emailSchema,
+export const changeUsernameSchema = z.object({
+  username: usernameSchema,
   currentPassword: z.string().min(1).max(200),
 });
 
@@ -112,4 +127,4 @@ export type ProjectInput = z.infer<typeof projectSchema>;
 export type GoalInput = z.infer<typeof goalSchema>;
 export type EventInput = z.infer<typeof eventSchema>;
 export type ChangePasswordInput = z.infer<typeof changePasswordSchema>;
-export type ChangeEmailInput = z.infer<typeof changeEmailSchema>;
+export type ChangeUsernameInput = z.infer<typeof changeUsernameSchema>;

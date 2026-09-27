@@ -5,7 +5,7 @@ import { useEffect, useState, useTransition } from 'react';
 import { setLocaleAction, signOutAction } from '@/app/actions/auth';
 import type { Dict } from '@/lib/i18n/dictionaries';
 
-export function TopBar({ dict, locale, email }: { dict: Dict; locale: 'ar' | 'en'; email: string }) {
+export function TopBar({ dict, locale, username }: { dict: Dict; locale: 'ar' | 'en'; username: string }) {
   const [pending, startTransition] = useTransition();
   const [dark, setDark] = useState(false);
 
@@ -28,7 +28,7 @@ export function TopBar({ dict, locale, email }: { dict: Dict; locale: 'ar' | 'en
     <header className="sticky top-0 z-20 flex items-center justify-between gap-3 border-b border-line bg-surface/90 px-4 py-3 backdrop-blur">
       <div className="min-w-0">
         <p className="truncate text-xs text-muted">
-          {dict.signedInAs} <span className="font-medium text-ink">{email}</span>
+          {dict.signedInAs} <span className="font-medium text-ink" dir="ltr">{username}</span>
         </p>
       </div>
 

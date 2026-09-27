@@ -9,7 +9,8 @@ export type Energy = 'deep' | 'light' | 'admin';
 
 export type UserDto = {
   id: string;
-  email: string;
+  username: string | null;
+  email: string | null;
   name: string;
   locale: string;
   aiEnabled: boolean;
@@ -143,16 +144,16 @@ export class TaskNoteApi {
     return (payload?.data ?? null) as T;
   }
 
-  login(email: string, password: string): Promise<AuthSession> {
+  login(identifier: string, password: string): Promise<AuthSession> {
     return this.request<AuthSession>('/api/v1/auth/login', {
       method: 'POST',
-      body: { email, password },
+      body: { identifier, password },
     });
   }
 
   signup(input: {
     name: string;
-    email: string;
+    username: string;
     password: string;
     workspaceName?: string;
   }): Promise<AuthSession> {

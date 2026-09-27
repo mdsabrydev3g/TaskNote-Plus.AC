@@ -27,7 +27,17 @@ export const users = pgTable(
   'users',
   {
     id: id(),
-    email: text('email').notNull(),
+    /**
+     * Login identity. Nullable at the database level so the column could be
+     * added to existing rows, but the application always sets it.
+     */
+    username: text('username'),
+    /**
+     * Legacy contact address. No longer collected at signup and no longer shown
+     * in the UI; kept so existing accounts keep their data and can still sign in
+     * with it.
+     */
+    email: text('email'),
     passwordHash: text('password_hash').notNull(),
     name: text('name').notNull().default(''),
     locale: text('locale').notNull().default('ar'),
@@ -36,7 +46,10 @@ export const users = pgTable(
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },
-  (t) => [uniqueIndex('users_email_uq').on(t.email)],
+  (t) => [
+    uniqueIndex('users_email_uq').on(t.email),
+    uniqueIndex('users_username_uq').on(t.username),
+  ],
 );
 
 export const workspaces = pgTable('workspaces', {
