@@ -26,6 +26,8 @@
   جدار حماية بسيط ضد CSRF (فحص الأصل + `SameSite=Lax`)، وتحديد معدل محاولات الدخول.
 - **الأمان**: صفحة لتغيير كلمة المرور تشترط كتابة كلمة المرور الحالية، وتُبطل الجلسات
   على الأجهزة الأخرى، وتُسجّل العملية في سجل التدقيق.
+- **واجهة Mobile API (v1)**: مسارات JSON مُصدَّرة تحت `/api/v1` مع رمز Bearer،
+  لتستهلكها تطبيقات الموبايل والسكربتات — توثيقها في [`docs/mobile-api.md`](docs/mobile-api.md).
 - **التقاط موحّد (Inbox)**: التقاط نصي فوري، مع **idempotency** عبر بصمة المحتوى
   (إعادة إرسال نفس النص لا تنشئ صفًا مكررًا).
 - **ملاحظات**: إنشاء/تحرير/حذف + تثبيت + ربط بمشروع + خيار «متاح للذكاء الاصطناعي».
@@ -112,13 +114,16 @@ vercel --prod
 ```
 app/
   (auth)/login, signup        # شاشات الدخول
-  (app)/home|inbox|tasks|projects|goals|notes|calendar|search|settings
+  app/home|inbox|tasks|projects|goals|notes|calendar|search|settings
+  api/v1/**                   # واجهة الموبايل (Bearer token)
   actions/                    # Server Actions: auth, capture, tasks, notes, ...
   layout.tsx, globals.css
 components/                   # shell, capture, task item, AI panel, palette
 db/  schema.ts, client.ts, migrations/
-lib/ auth/ (session, password), db/scope.ts, ai/, i18n/, progress, search, validation
-scripts/ migrate.ts, seed.ts
+lib/ api/ (http, auth, dto), services/accounts.ts, auth/, db/scope.ts, ai/,
+     i18n/, progress, search, validation
+docs/ mobile-api.md
+scripts/ migrate.ts, seed.ts, check-routes.mjs
 tests/ vitest
 public/ manifest.webmanifest, sw.js, icons
 middleware.ts                 # حماية /app
