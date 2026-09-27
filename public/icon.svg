@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="TaskNote Plus">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#3c60ee" />
+      <stop offset="1" stop-color="#2033ac" />
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#g)" />
+  <path d="M150 262l62 62 150-150" fill="none" stroke="#ffffff" stroke-width="44" stroke-linecap="round" stroke-linejoin="round" />
+  <circle cx="368" cy="368" r="52" fill="#ffffff" />
+  <path d="M344 368h48M368 344v48" stroke="#2033ac" stroke-width="20" stroke-linecap="round" />
+</svg>
