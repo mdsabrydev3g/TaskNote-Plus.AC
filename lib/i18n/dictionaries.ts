@@ -130,6 +130,15 @@ const ar = {
   passwordTooShort: 'كلمة المرور الجديدة قصيرة جدًا (10 أحرف على الأقل).',
   passwordUnchanged: 'كلمة المرور الجديدة مطابقة للحالية.',
   passwordHint: '10 أحرف على الأقل، مع 3 أنواع من الأحرف (صغيرة/كبيرة/أرقام/رموز).',
+  changeEmail: 'تغيير البريد الإلكتروني',
+  currentEmail: 'البريد الحالي',
+  newEmail: 'البريد الجديد',
+  currentPasswordForChange: 'كلمة المرور الحالية (للتأكيد)',
+  emailChanged: 'تم تغيير البريد الإلكتروني. استخدمه في تسجيل الدخول من الآن.',
+  emailUnchanged: 'البريد الجديد مطابق للحالي.',
+  emailInvalid: 'صيغة البريد الإلكتروني غير صحيحة.',
+  emailNote:
+    'لا يوجد تحقّق بالبريد في هذه المرحلة، فلا نستطيع إثبات ملكيتك للعنوان الجديد — لكن لا يمكن تغييره دون كلمة مرورك الحالية، والعملية تُسجَّل في سجل التدقيق.',
 };
 
 export type Dict = typeof ar;
@@ -255,6 +264,15 @@ const en: Dict = {
   passwordTooShort: 'The new password is too short (10+ characters).',
   passwordUnchanged: 'The new password matches the current one.',
   passwordHint: 'At least 10 characters using 3 character classes (lower, upper, digits, symbols).',
+  changeEmail: 'Change email',
+  currentEmail: 'Current email',
+  newEmail: 'New email',
+  currentPasswordForChange: 'Current password (to confirm)',
+  emailChanged: 'Your email has been changed. Use it to sign in from now on.',
+  emailUnchanged: 'The new email matches the current one.',
+  emailInvalid: 'That email address is not valid.',
+  emailNote:
+    'There is no email verification in this build, so ownership of the new address cannot be proven — but it cannot be changed without your current password, and the change is written to the audit log.',
 };
 
 export const dictionaries: Record<Locale, Dict> = { ar, en };

@@ -25,6 +25,11 @@ export const changePasswordSchema = z.object({
   confirm: z.string().min(1).max(200),
 });
 
+export const changeEmailSchema = z.object({
+  email: emailSchema,
+  currentPassword: z.string().min(1).max(200),
+});
+
 export const captureSchema = z.object({
   rawText: z.string().trim().min(1).max(20000),
   source: z.enum(['text', 'voice', 'image', 'email', 'web', 'file']).default('text'),
@@ -107,3 +112,4 @@ export type ProjectInput = z.infer<typeof projectSchema>;
 export type GoalInput = z.infer<typeof goalSchema>;
 export type EventInput = z.infer<typeof eventSchema>;
 export type ChangePasswordInput = z.infer<typeof changePasswordSchema>;
+export type ChangeEmailInput = z.infer<typeof changeEmailSchema>;

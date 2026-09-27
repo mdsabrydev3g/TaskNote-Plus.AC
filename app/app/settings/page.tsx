@@ -6,6 +6,7 @@ import { requireSession } from '@/lib/auth/current';
 import { getTranslator } from '@/lib/i18n';
 import { dictionaries } from '@/lib/i18n/dictionaries';
 import { updateProfileAction } from '@/app/actions/settings';
+import { ChangeEmailForm } from '@/components/change-email-form';
 import { getAIGateway } from '@/lib/ai/gateway';
 
 export const dynamic = 'force-dynamic';
@@ -64,6 +65,8 @@ export default async function SettingsPage() {
           </div>
         </form>
       </section>
+
+      <ChangeEmailForm dict={dict} currentEmail={session.email} />
 
       <section className="card flex flex-col gap-2">
         <h2 className="text-sm font-semibold">{dict.workspace}</h2>

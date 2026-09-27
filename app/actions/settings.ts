@@ -1,14 +1,17 @@
 'use server';
 
+import { cookies } from 'next/headers';
 import { revalidatePath } from 'next/cache';
 import { and, eq, ne } from 'drizzle-orm';
 import { db } from '@/db/client';
 import { permissionGrants, sessions, users, workspaces } from '@/db/schema';
 import { assertSameOrigin, requestIp, requireSessionOrThrow } from '@/lib/auth/current';
+import { checkEmailChange } from '@/lib/auth/email-change';
 import { checkPasswordChange, hashPassword, verifyPassword } from '@/lib/auth/password';
+import { SESSION_COOKIE, createSessionToken, sessionCookieOptions } from '@/lib/auth/session';
 import { rateLimit } from '@/lib/rate-limit';
 import { writeAudit } from '@/lib/db/scope';
-import { changePasswordSchema, permissionScopeSchema } from '@/lib/validation';
+import { changeEmailSchema, changePasswordSchema, permissionScopeSchema } from '@/lib/validation';
 
 export async function setPermissionAction(formData: FormData): Promise<void> {
   const session = await requireSessionOrThrow();
@@ -134,4 +137,83 @@ export async function changePasswordAction(
 
   revalidatePath('/app/settings/security');
   return { ok: true };
+}
+
+export type ChangeEmailState = { error?: string; ok?: boolean; email?: string };
+
+/**
+ * Changes the account email. The email is the login identity, so the current
+ * password is required and uniqueness is enforced before the write.
+ */
+export async function changeEmailAction(
+  _prev: ChangeEmailState,
+  formData: FormData,
+): Promise<ChangeEmailState> {
+  const session = await requireSessionOrThrow();
+  await assertSameOrigin();
+
+  if (!rateLimit(`email-change:${session.userId}`, 5, 15 * 60_000).allowed) {
+    return { error: 'genericError' };
+  }
+
+  const parsed = changeEmailSchema.safeParse({
+    email: String(formData.get('email') ?? ''),
+    currentPassword: String(formData.get('currentPassword') ?? ''),
+  });
+  if (!parsed.success) return { error: 'emailInvalid' };
+
+  const rows = await db().select().from(users).where(eq(users.id, session.userId)).limit(1);
+  const user = rows[0];
+  if (!user) return { error: 'genericError' };
+
+  const problem = checkEmailChange({
+    currentMatches: verifyPassword(parsed.data.currentPassword, user.passwordHash),
+    currentEmail: user.email,
+    nextEmail: parsed.data.email,
+  });
+  if (problem) return { error: problem };
+
+  const nextEmail = parsed.data.email.trim().toLowerCase();
+
+  const taken = await db()
+    .select({ id: users.id })
+    .from(users)
+    .where(eq(users.email, nextEmail))
+    .limit(1);
+  if (taken.length > 0 && taken[0].id !== session.userId) return { error: 'emailTaken' };
+
+  try {
+    await db()
+      .update(users)
+      .set({ email: nextEmail, updatedAt: new Date() })
+      .where(eq(users.id, session.userId));
+  } catch {
+    // The unique index is the last line of defence against a concurrent write.
+    return { error: 'emailTaken' };
+  }
+
+  // The session token carries the email for display, so re-issue it with the
+  // new address; the user stays signed in on this device.
+  const token = await createSessionToken({
+    userId: session.userId,
+    workspaceId: session.workspaceId,
+    email: nextEmail,
+    deviceId: session.deviceId,
+  });
+  const store = await cookies();
+  store.set(SESSION_COOKIE, token, sessionCookieOptions());
+
+  await writeAudit({
+    workspaceId: session.workspaceId,
+    actorUserId: session.userId,
+    action: 'user.email_change',
+    entityType: 'user',
+    entityId: session.userId,
+    metadata: { from: user.email, to: nextEmail },
+    ip: await requestIp(),
+  });
+
+  revalidatePath('/app/settings');
+  revalidatePath('/app/home');
+  return { ok: true, email: nextEmail };
 }
