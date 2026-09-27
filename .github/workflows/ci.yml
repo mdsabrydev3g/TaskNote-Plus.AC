@@ -38,3 +38,7 @@ jobs:
       # That guarantee is what keeps deploys reproducible on Vercel.
       - name: Production build (no env, no DB)
         run: npm run build
+
+      # Guards the navigation/PWA/middleware route contract against the built app.
+      - name: Route contract check
+        run: npm run check:routes

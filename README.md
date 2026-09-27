@@ -142,7 +142,15 @@ middleware.ts                 # حماية /app
 npm run typecheck   # tsc --noEmit
 npm test            # vitest: كلمات المرور، idempotency، عزل مساحة العمل، التقدّم، NL quick-add
 npm run build       # بناء إنتاجي بدون قاعدة بيانات
+npm run check:routes # يتحقق أن روابط التنقل والـ PWA والميدلوير كلها مسارات موجودة فعلًا
+
+# كل ما سبق بأمر واحد:
+npm run verify
 ```
+
+> `check:routes` يحمي من خطأ حقيقي وقع أثناء التطوير: مجلد `(app)` هو **route group**
+> فلا يضيف `/app` إلى الرابط، وبالتالي كل روابط `/app/...` كانت تعيد 404.
+> الحل: تسمية المجلد `app/app` حتى تتطابق المسارات مع الروابط والميدلوير.
 
 ## 10. القيود المعروفة (صريحة) / Known limitations
 
